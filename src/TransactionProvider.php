@@ -2,17 +2,18 @@
 
 namespace app\Provider;
 
-use kosuha606\VirtualAdmin\Domains\Transaction\TransactionVm;
 use kosuha606\VirtualModel\VirtualModelProvider;
 
 class TransactionProvider extends VirtualModelProvider
 {
+    public const TRANSACTION = 'transaction';
+
     /**
      * @return string
      */
     public function type()
     {
-        return TransactionVm::KEY;
+        return self::TRANSACTION;
     }
 
     /**
@@ -20,7 +21,7 @@ class TransactionProvider extends VirtualModelProvider
      */
     public function environemnt(): string
     {
-        return TransactionVm::KEY;
+        return self::TRANSACTION;
     }
 
     /**
@@ -28,7 +29,7 @@ class TransactionProvider extends VirtualModelProvider
      * @param mixed $config
      * @return null
      */
-    protected function findOne($modelClass, $config)
+    protected function findOne(string $modelClass, array $config)
     {
         return null;
     }
@@ -38,7 +39,7 @@ class TransactionProvider extends VirtualModelProvider
      * @param mixed $config
      * @return null
      */
-    protected function findMany($modelClass, $config)
+    protected function findMany(string $modelClass, array $config)
     {
         return null;
     }

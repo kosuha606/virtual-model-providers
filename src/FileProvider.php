@@ -7,12 +7,14 @@ use RuntimeException;
 
 class FileProvider extends VirtualModelProvider
 {
+    public const FILES = 'files';
+
     /**
      * @return string
      */
     public function type(): string
     {
-        return 'files';
+        return self::FILES;
     }
 
     /**

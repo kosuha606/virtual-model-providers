@@ -11,7 +11,11 @@
   "minimum-stability": "dev",
   "require": {
     "php": ">=7.4",
-    "kosuha606/virtual-model": "^1.2.5"
+    "kosuha606/virtual-model": "^1.2.5",
+    "mongodb/mongodb": "1.6.*",
+    "ext-mongodb": "*",
+    "ext-json": "*",
+    "ext-pdo": "*"
   },
   "autoload": {
     "psr-4": {

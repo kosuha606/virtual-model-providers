@@ -2,23 +2,34 @@
 
 namespace app\Provider;
 
+use Exception;
 use kosuha606\VirtualAdmin\Model\Session;
 use kosuha606\VirtualModel\Example\MemoryModelProvider;
 use kosuha606\VirtualModel\VirtualModelEntity;
 
 class SessionProvider extends MemoryModelProvider
 {
+    public const SESSION = 'session';
+
     public function __construct()
     {
         session_start();
     }
 
-    public function type()
+    /**
+     * @return string
+     */
+    public function type(): string
     {
-        return Session::TYPE;
+        return self::SESSION;
     }
 
-    public function findOne($modelClass, $config)
+    /**
+     * @param string $modelClass
+     * @param array $config
+     * @return array
+     */
+    public function findOne(string $modelClass, array $config): array
     {
         $key = $config['where'][0][2];
         return [
@@ -28,14 +39,18 @@ class SessionProvider extends MemoryModelProvider
         ];
     }
 
-    public function findMany($modelClass, $config)
+    public function findMany(string $modelClass, string $config): array
     {
         return [self::findOne($modelClass, $config)];
     }
 
-    public function flush()
+    /**
+     * @return array|int[]
+     * @throws Exception
+     */
+    public function flush(): array
     {
-        /** @var Session $model */
+        /** @var VirtualModelEntity $model */
         foreach ($this->persistedModels as $model) {
             if (isset($_SESSION[$model->key])) {
                 unset($_SESSION[$model->key]);
@@ -47,9 +62,13 @@ class SessionProvider extends MemoryModelProvider
         return parent::flush();
     }
 
-    public function delete(VirtualModelEntity $model)
+    /**
+     * @param VirtualModelEntity $model
+     * @return bool
+     */
+    public function delete(VirtualModelEntity $model): bool
     {
-        /** @var Session $model */
+        /** @var VirtualModelEntity $model */
         unset($_SESSION[$model->key]);
 
         return true;

@@ -7,24 +7,34 @@ use RuntimeException;
 
 class PermissionProvider extends MemoryModelProvider
 {
+    public const PERMISSION = 'permission';
+
     /**
      * @return string
      */
     public function type(): string
     {
-        return 'permission';
+        return self::PERMISSION;
     }
 
+    /**
+     * throws 403 exception
+     */
     public function throw403(): void
     {
         throw new RuntimeException('403');
     }
 
-    public function findOne($modelClass, $config)
+    /**
+     * @param string $modelClass
+     * @param array $config
+     * @return array
+     */
+    public function findOne(string $modelClass, array $config): array
     {
         $data = [];
 
-        foreach($config['where'] as $whereConfig) {
+        foreach ($config['where'] as $whereConfig) {
             $data[$whereConfig[1]] = $whereConfig[2];
         }
 

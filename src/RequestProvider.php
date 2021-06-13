@@ -2,18 +2,25 @@
 
 namespace app\Provider;
 
-use kosuha606\VirtualAdmin\Model\Request;
 use kosuha606\VirtualModel\Example\MemoryModelProvider;
 use function getallheaders;
 
 class RequestProvider extends MemoryModelProvider
 {
+    public const REQUEST = 'request';
+
+    /**
+     * @return string
+     */
     public function type(): string
     {
-        return Request::TYPE;
+        return self::REQUEST;
     }
 
-    public function __construct()
+    /**
+     * @param string $requestModelClass
+     */
+    public function __construct(string $requestModelClass)
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
@@ -24,9 +31,8 @@ class RequestProvider extends MemoryModelProvider
         }
 
         $isAjax = (isset($headers['X-Requested-With']) && $headers['X-Requested-With'] === 'XMLHttpRequest');
-
         $this->memoryStorage = [
-            Request::class => [
+            $requestModelClass => [
                 [
                     'headers' => $headers,
                     'pathInfo' => $requestUri,

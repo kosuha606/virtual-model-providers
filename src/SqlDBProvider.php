@@ -2,17 +2,23 @@
 
 namespace app\Provider;
 
-use app\Domain\Base\BaseVm;
+use Exception;
 use kosuha606\VirtualModel\VirtualModelEntity;
 use kosuha606\VirtualModel\VirtualModelProvider;
 use LogicException;
 use PDO;
+use PDOStatement;
+use Throwable;
 
 class SqlDBProvider extends VirtualModelProvider
 {
     private array $modelsToTables = [];
     private PDO $dbh;
+    private array $lastError;
 
+    /**
+     * @param array $config
+     */
     public function __construct(array $config)
     {
         $this->dbh = new PDO(
@@ -24,23 +30,31 @@ class SqlDBProvider extends VirtualModelProvider
         $this->modelsToTables = $config['relations'];
     }
 
+    /**
+     * @param string $sql
+     * @return bool
+     */
     public function execute(string $sql): bool
     {
         $statement = $this->dbh->prepare($sql);
         return $statement->execute();
     }
 
+    /**
+     * @param string $sql
+     * @return false|PDOStatement
+     */
     public function query(string $sql)
     {
         return $this->dbh->query($sql);
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function flush()
     {
-        /** @var BaseVm $model */
+        /** @var VirtualModelEntity $model */
         foreach ($this->persistedModels as $model) {
             $modelClass = get_class($model);
             $table = $this->getTableByModel($modelClass);
@@ -97,9 +111,9 @@ class SqlDBProvider extends VirtualModelProvider
                     $id = $this->dbh->lastInsertId($table);
                     $model->id = $id;
                 }
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $message = $exception->getMessage();
-                $message .= ' | Table: '.$table;
+                $message .= ' | Table: ' . $table;
                 throw new \LogicException($message);
             }
         }
@@ -109,10 +123,10 @@ class SqlDBProvider extends VirtualModelProvider
 
     /**
      * @param VirtualModelEntity $model
-     * @throws \Exception
-     * @throws \Throwable
+     * @throws Exception
+     * @throws Throwable
      */
-    public function delete(VirtualModelEntity $model)
+    public function delete(VirtualModelEntity $model): void
     {
         $modelClass = get_class($model);
         $mongoSearch = $this->processQuery(['where' => [['=', 'id', $model->id]]]);
@@ -132,18 +146,18 @@ class SqlDBProvider extends VirtualModelProvider
      *
      * @param string $modelClass
      * @param mixed $config
-     * @throws \Exception
+     * @throws Exception
      */
-    public function deleteByCondition($modelClass, $config)
+    public function deleteByCondition(string $modelClass, array $config)
     {
-
+        throw new LogicException('Not implemented');
     }
 
     /**
      * @param string $modelClass
      * @param mixed $config
      */
-    public function count($modelClass, $config)
+    public function count(string $modelClass, array $config)
     {
 
     }
@@ -152,7 +166,7 @@ class SqlDBProvider extends VirtualModelProvider
      * @param string $modelClass
      * @param mixed $config
      * @return mixed|void
-     * @throws \Exception
+     * @throws Exception
      */
     protected function findOne($modelClass, $config)
     {
@@ -197,7 +211,7 @@ class SqlDBProvider extends VirtualModelProvider
      * @param string $modelClass
      * @param mixed $config
      * @return mixed|void
-     * @throws \Exception
+     * @throws Exception
      */
     protected function findMany($modelClass, $config)
     {
@@ -230,12 +244,20 @@ class SqlDBProvider extends VirtualModelProvider
         );
     }
 
+    /**
+     * @param $data
+     * @return mixed
+     */
     private function findPostProcess($data)
     {
         return $data;
     }
 
-    private function processQuery($config)
+    /**
+     * @param $config
+     * @return array
+     */
+    private function processQuery($config): array
     {
         $searchConfig = [
             'wheresql' => '',
@@ -294,12 +316,15 @@ class SqlDBProvider extends VirtualModelProvider
         return $this->modelsToTables[$modelClass];
     }
 
+    /**
+     * @param $statement
+     */
     private function executeStatement($statement)
     {
         try {
             $statement->execute();
-        } catch (\Exception $exception) {
-
+        } catch (Exception $exception) {
+            $this->lastError = ['exception' => $exception];
         }
     }
 }

@@ -6,20 +6,22 @@ use kosuha606\VirtualModel\VirtualModelProvider;
 
 class CookieProvider extends VirtualModelProvider
 {
+    public const COOKIES = 'cookies';
+
     /**
      * @return string
      */
     public function type(): string
     {
-        return 'cookies';
+        return self::COOKIES;
     }
 
     /**
      * @param string $modelClass
      * @param string $key
-     * @return null
+     * @return string|null
      */
-    public function get($modelClass, $key)
+    public function get(string $modelClass, string $key): ?string
     {
         return $_COOKIE[$key] ?? null;
     }
@@ -30,16 +32,16 @@ class CookieProvider extends VirtualModelProvider
      * @param string $value
      * @param int $expires
      */
-    public function set($modelClass, $key, $value, $expires = 3600)
+    public function set(string $modelClass, string $key, string $value, int $expires = 3600): void
     {
         setcookie($key, $value, $expires, '/');
     }
 
     /**
-     * @param $modelClass
-     * @param $key
+     * @param string $modelClass
+     * @param string $key
      */
-    public function unset($modelClass, $key)
+    public function unset(string $modelClass, string $key): void
     {
         setcookie($key, 0, time() - 1000);
     }

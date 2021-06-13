@@ -1,10 +1,15 @@
 <?php
 
-namespace app\Provider;
+namespace kosuha606\VirtualModelProviders;
 
+use Exception;
 use kosuha606\VirtualModel\VirtualModelEntity;
 use kosuha606\VirtualModel\VirtualModelProvider;
+use LogicException;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Client;
+use MongoDB\Collection;
+use Throwable;
 
 /**
  * DOCS
@@ -12,21 +17,27 @@ use MongoDB\BSON\ObjectId;
  */
 class MongoDBProvider extends VirtualModelProvider
 {
-    private $dbName = 'trade';
+    public const ALL_CONDITION = 'all';
+    public const NOT_IMPLEMENTED = 'Not implemented';
 
-    private $client;
+    private string $dbName;
+    private Client $client;
 
-    public function __construct()
+    /**
+     * @param string $dbName
+     * @param string $dsn mongodb://localhost:27017
+     */
+    public function __construct(string $dbName, string $dsn)
     {
-        $this->client = new Client("mongodb://localhost:27017");
+        $this->client = new Client($dsn);
+        $this->dbName = $dbName;
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function flush()
     {
-        /** @var BaseVm $model */
         foreach ($this->persistedModels as $model) {
             $collectionName = $this->getCollectionName($model);
             $model->isNewRecord = false;
@@ -55,8 +66,8 @@ class MongoDBProvider extends VirtualModelProvider
 
     /**
      * @param VirtualModelEntity $model
-     * @throws \Exception
-     * @throws \Throwable
+     * @throws Exception
+     * @throws Throwable
      */
     public function delete(VirtualModelEntity $model)
     {
@@ -67,33 +78,31 @@ class MongoDBProvider extends VirtualModelProvider
     }
 
     /**
-     * Удаление моделей по условию
-     *
      * @param string $modelClass
      * @param mixed $config
-     * @throws \Exception
+     * @throws Exception
      */
-    public function deleteByCondition($modelClass, $config)
+    public function deleteByCondition(string $modelClass, $config)
     {
-
+        throw new LogicException(self::NOT_IMPLEMENTED . $modelClass . json_decode($config));
     }
 
     /**
      * @param string $modelClass
      * @param mixed $config
      */
-    public function count($modelClass, $config)
+    public function count(string $modelClass, $config)
     {
-
+        throw new LogicException(self::NOT_IMPLEMENTED . $modelClass . json_encode($config));
     }
 
     /**
      * @param string $modelClass
      * @param mixed $config
      * @return mixed|void
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function findOne($modelClass, $config)
+    protected function findOne($modelClass, $config): array
     {
         $mongoSearch = $this->processQuery($config);
         $collectionName = $this->getCollectionName($modelClass);
@@ -113,9 +122,9 @@ class MongoDBProvider extends VirtualModelProvider
      * @param string $modelClass
      * @param mixed $config
      * @return mixed|void
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function findMany($modelClass, $config)
+    protected function findMany($modelClass, $config): array
     {
         $mongoSearch = $this->processQuery($config);
         $collectionName = $this->getCollectionName($modelClass);
@@ -128,27 +137,32 @@ class MongoDBProvider extends VirtualModelProvider
         return $this->findPostProcess($this->getCollection($collectionName)->find($mongoSearch, $options)->toArray());
     }
 
-    private function findPostProcess($data)
+    /**
+     * @param $data
+     * @return array
+     */
+    private function findPostProcess($data): array
     {
-        $result = array_map(function($item) {
+        return array_map(function ($item) {
             if (isset($item['_id']) && $item['_id'] instanceof ObjectId) {
                 $item['id'] = (string)$item['_id'];
             }
 
             return $item;
         }, $data);
-
-        return $result;
     }
 
-
-    private function processQuery($config)
+    /**
+     * @param $config
+     * @return array
+     */
+    private function processQuery($config): array
     {
         $searchConfig = [];
 
         if (isset($config['where'])) {
             foreach ($config['where'] as $whereConfig) {
-                if ($whereConfig === 'all') {
+                if ($whereConfig === self::ALL_CONDITION) {
                     break;
                 }
 
@@ -178,6 +192,10 @@ class MongoDBProvider extends VirtualModelProvider
         return $searchConfig;
     }
 
+    /**
+     * @param $objectOrClass
+     * @return mixed
+     */
     private function getCollectionName($objectOrClass)
     {
         if (is_object($objectOrClass)) {
@@ -185,12 +203,15 @@ class MongoDBProvider extends VirtualModelProvider
         }
 
         $classParts = array_reverse(explode('/', $objectOrClass));
-        $className = reset($classParts);
 
-        return $className;
+        return reset($classParts);
     }
 
-    private function getCollection($collectionName)
+    /**
+     * @param $collectionName
+     * @return Collection
+     */
+    private function getCollection($collectionName): Collection
     {
         return $this->client->{$this->dbName}->{$collectionName};
     }

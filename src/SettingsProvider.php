@@ -2,21 +2,14 @@
 
 namespace app\Provider;
 
-use kosuha606\VirtualAdmin\Domains\Settings\SettingsVm;
-use kosuha606\VirtualAdmin\Domains\Settings\SettingsProviderInterface;
 use kosuha606\VirtualModel\VirtualModelProvider;
 
-class SettingsProvider extends VirtualModelProvider implements SettingsProviderInterface
+class SettingsProvider extends VirtualModelProvider
 {
-    /**
-     * @var string
-     */
-    private $settingsPath;
+    public const SETTINGS = 'settings';
 
-    /**
-     * @var string
-     */
-    private $defaultSettingsPath;
+    private string $settingsPath;
+    private string $defaultSettingsPath;
 
     /**
      * @param string $defaultSettingsPath
@@ -28,9 +21,12 @@ class SettingsProvider extends VirtualModelProvider implements SettingsProviderI
         $this->defaultSettingsPath = $defaultSettingsPath;
     }
 
+    /**
+     * @return string
+     */
     public function type(): string
     {
-        return SettingsVm::KEY;
+        return self::SETTINGS;
     }
 
     /**
@@ -50,7 +46,7 @@ class SettingsProvider extends VirtualModelProvider implements SettingsProviderI
     /**
      * @return array|mixed
      */
-    public function getSettings()
+    public function getSettings(): array
     {
         $settingsPath = $this->settingsPath;
 
@@ -70,7 +66,6 @@ class SettingsProvider extends VirtualModelProvider implements SettingsProviderI
     {
         $settingsPath = $this->settingsPath;
         $settingsJson = json_encode($settings, JSON_UNESCAPED_UNICODE);
-
         file_put_contents($settingsPath, $settingsJson);
     }
 }
