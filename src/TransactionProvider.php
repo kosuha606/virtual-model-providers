@@ -11,66 +11,28 @@ class TransactionProvider extends VirtualModelProvider
     public function __construct()
     {
         parent::__construct();
-        $this->specifyActions([], true);
-    }
-
-    /**
-     * @return string
-     */
-    public function type()
-    {
-        return self::TRANSACTION;
-    }
-
-    /**
-     * @return string
-     */
-    public function environemnt(): string
-    {
-        return self::TRANSACTION;
-    }
-
-    /**
-     * @param string $modelClass
-     * @param mixed $config
-     * @return null
-     */
-    protected function findOne(string $modelClass, array $config)
-    {
-        return null;
-    }
-
-    /**
-     * @param string $modelClass
-     * @param mixed $config
-     * @return null
-     */
-    protected function findMany(string $modelClass, array $config)
-    {
-        return null;
-    }
-
-    /**
-     * @param string $name
-     */
-    public static function begin($name = 'default'): void
-    {
-        // nothing
-    }
-
-    /**
-     * @param string $name
-     */
-    public static function commit($name = 'default'): void
-    {
-        // nothing
-    }
-
-    /**
-     * @param string $name
-     */
-    public static function rollback($name = 'default'): void
-    {
-        // nothing mongo
+        $this->specifyActions([
+            'type' => function() {
+                return self::TRANSACTION;
+            },
+            'environment' => function() {
+                return self::TRANSACTION;
+            },
+            'findOne' => function() {
+                return [];
+            },
+            'findMany' => function() {
+                return [];
+            },
+            'begin' => function() {
+                return [];
+            },
+            'commit' => function() {
+                return [];
+            },
+            'rollback' => function() {
+                return [];
+            },
+        ], true);
     }
 }

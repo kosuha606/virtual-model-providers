@@ -12,38 +12,24 @@ class PermissionProvider extends MemoryModelProvider
     public function __construct()
     {
         parent::__construct();
-        $this->specifyActions([], true);
-    }
+        $this->specifyActions([
+            'type' => function() {
+                return self::PERMISSION;
+            },
 
-    /**
-     * @return string
-     */
-    public function type(): string
-    {
-        return self::PERMISSION;
-    }
+            'throw403' => function() {
+                throw new RuntimeException('403');
+            },
 
-    /**
-     * throws 403 exception
-     */
-    public function throw403(): void
-    {
-        throw new RuntimeException('403');
-    }
+            'findOne' => function(string $modelClass, array $config) {
+                $data = [];
 
-    /**
-     * @param string $modelClass
-     * @param array $config
-     * @return array
-     */
-    public function findOne(string $modelClass, array $config): array
-    {
-        $data = [];
+                foreach ($config['where'] as $whereConfig) {
+                    $data[$whereConfig[1]] = $whereConfig[2];
+                }
 
-        foreach ($config['where'] as $whereConfig) {
-            $data[$whereConfig[1]] = $whereConfig[2];
-        }
-
-        return $data;
+                return $data;
+            },
+        ], true);
     }
 }
