@@ -9,6 +9,12 @@ class PermissionProvider extends MemoryModelProvider
 {
     public const PERMISSION = 'permission';
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->specifyActions([], true);
+    }
+
     /**
      * @return string
      */

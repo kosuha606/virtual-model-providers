@@ -13,7 +13,9 @@ class SessionProvider extends MemoryModelProvider
 
     public function __construct()
     {
+        parent::__construct();
         session_start();
+        $this->specifyActions([], true);
     }
 
     /**

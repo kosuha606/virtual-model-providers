@@ -29,112 +29,81 @@ class MongoDBProvider extends VirtualModelProvider
      */
     public function __construct(string $dbName, string $dsn)
     {
+        parent::__construct();
         $this->client = new Client($dsn);
         $this->dbName = $dbName;
-    }
+        $this->specifyActions([
+            'flush' => function () {
+                foreach ($this->persistedModels as $model) {
+                    $collectionName = $this->getCollectionName($model);
+                    $model->isNewRecord = false;
 
-    /**
-     * @throws Exception
-     */
-    public function flush()
-    {
-        foreach ($this->persistedModels as $model) {
-            $collectionName = $this->getCollectionName($model);
-            $model->isNewRecord = false;
+                    if ($model->hasAttribute('id') && $model->id) {
+                        $this->getCollection($collectionName)->updateOne(
+                            ['_id' => $model->_id],
+                            ['$set' => $model->toArray()]
+                        );
+                    } else {
+                        $modelData = $model->toArray();
 
-            if ($model->hasAttribute('id') && $model->id) {
-                $this->getCollection($collectionName)->updateOne(
-                    ['_id' => $model->_id],
-                    ['$set' => $model->toArray()]
-                );
-            } else {
-                $modelData = $model->toArray();
+                        foreach (['id', '_id'] as $property) {
+                            if (isset($modelData[$property])) {
+                                unset($modelData[$property]);
+                            }
+                        }
 
-                foreach (['id', '_id'] as $property) {
-                    if (isset($modelData[$property])) {
-                        unset($modelData[$property]);
+                        $result = $this->getCollection($collectionName)->insertOne($modelData);
+                        $model->id = (string)$result->getInsertedId();
                     }
                 }
 
-                $result = $this->getCollection($collectionName)->insertOne($modelData);
-                $model->id = (string)$result->getInsertedId();
-            }
-        }
+                $this->persistedModels = [];
+            },
 
-        $this->persistedModels = [];
-    }
+            'delete' => function (VirtualModelEntity $model) {
+                $collectionName = $this->getCollectionName($model);
+                $this->getCollection($collectionName)->deleteOne([
+                    '_id' => $model->_id
+                ]);
+            },
 
-    /**
-     * @param VirtualModelEntity $model
-     * @throws Exception
-     * @throws Throwable
-     */
-    public function delete(VirtualModelEntity $model)
-    {
-        $collectionName = $this->getCollectionName($model);
-        $this->getCollection($collectionName)->deleteOne([
-            '_id' => $model->_id
-        ]);
-    }
+            'deleteByCondition' => function (string $modelClass, $config) {
+                throw new LogicException(self::NOT_IMPLEMENTED . $modelClass . json_decode($config));
+            },
 
-    /**
-     * @param string $modelClass
-     * @param mixed $config
-     * @throws Exception
-     */
-    public function deleteByCondition(string $modelClass, $config)
-    {
-        throw new LogicException(self::NOT_IMPLEMENTED . $modelClass . json_decode($config));
-    }
+            'count' => function (string $modelClass, $config) {
+                throw new LogicException(self::NOT_IMPLEMENTED . $modelClass . json_encode($config));
+            },
 
-    /**
-     * @param string $modelClass
-     * @param mixed $config
-     */
-    public function count(string $modelClass, $config)
-    {
-        throw new LogicException(self::NOT_IMPLEMENTED . $modelClass . json_encode($config));
-    }
+            'findOne' => function ($modelClass, $config): array {
+                $mongoSearch = $this->processQuery($config);
+                $collectionName = $this->getCollectionName($modelClass);
+                $options = [];
 
-    /**
-     * @param string $modelClass
-     * @param mixed $config
-     * @return mixed|void
-     * @throws Exception
-     */
-    protected function findOne($modelClass, $config): array
-    {
-        $mongoSearch = $this->processQuery($config);
-        $collectionName = $this->getCollectionName($modelClass);
-        $options = [];
+                if (isset($config['sort'])) {
+                    $options['sort'] = $config['sort'];
+                }
 
-        if (isset($config['sort'])) {
-            $options['sort'] = $config['sort'];
-        }
+                $result = (array)$this->getCollection($collectionName)->findOne($mongoSearch, $options);
+                $processedResults = $this->findPostProcess([$result]);
 
-        $result = (array)$this->getCollection($collectionName)->findOne($mongoSearch, $options);
-        $processedResults = $this->findPostProcess([$result]);
+                return $processedResults[0] ?? [];
+            },
 
-        return $processedResults[0] ?? [];
-    }
+            'findMany' => function ($modelClass, $config): array {
+                $mongoSearch = $this->processQuery($config);
+                $collectionName = $this->getCollectionName($modelClass);
+                $options = [];
 
-    /**
-     * @param string $modelClass
-     * @param mixed $config
-     * @return mixed|void
-     * @throws Exception
-     */
-    protected function findMany($modelClass, $config): array
-    {
-        $mongoSearch = $this->processQuery($config);
-        $collectionName = $this->getCollectionName($modelClass);
-        $options = [];
+                if (isset($config['sort'])) {
+                    $options['sort'] = $config['sort'];
+                }
 
-        if (isset($config['sort'])) {
-            $options['sort'] = $config['sort'];
-        }
+                return $this->findPostProcess($this->getCollection($collectionName)->find($mongoSearch, $options)->toArray());
+            },
 
-        return $this->findPostProcess($this->getCollection($collectionName)->find($mongoSearch, $options)->toArray());
+
+        ], true);
     }
 
     /**

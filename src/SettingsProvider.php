@@ -17,8 +17,10 @@ class SettingsProvider extends VirtualModelProvider
      */
     public function __construct(string $defaultSettingsPath, string $customSettingsPath)
     {
+        parent::__construct();
         $this->settingsPath = $customSettingsPath;
         $this->defaultSettingsPath = $defaultSettingsPath;
+        $this->specifyActions([], true);
     }
 
     /**

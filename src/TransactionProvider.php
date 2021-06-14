@@ -8,6 +8,12 @@ class TransactionProvider extends VirtualModelProvider
 {
     public const TRANSACTION = 'transaction';
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->specifyActions([], true);
+    }
+
     /**
      * @return string
      */

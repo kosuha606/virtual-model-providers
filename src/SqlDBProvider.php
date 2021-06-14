@@ -14,13 +14,13 @@ class SqlDBProvider extends VirtualModelProvider
 {
     private array $modelsToTables = [];
     private PDO $dbh;
-    private array $lastError;
 
     /**
      * @param array $config
      */
     public function __construct(array $config)
     {
+        parent::__construct();
         $this->dbh = new PDO(
             $config['connection']['dsn'],
             $config['connection']['user'],
@@ -28,6 +28,7 @@ class SqlDBProvider extends VirtualModelProvider
         );
         $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->modelsToTables = $config['relations'];
+        $this->specifyActions([], true);
     }
 
     /**

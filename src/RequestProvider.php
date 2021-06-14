@@ -22,6 +22,7 @@ class RequestProvider extends MemoryModelProvider
      */
     public function __construct(string $requestModelClass)
     {
+        parent::__construct();
         $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
         $headers = [];

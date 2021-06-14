@@ -18,6 +18,8 @@ class SystemAlertProvider extends MemoryModelProvider
      */
     public function __construct(string $alertClass, string $sessionClass)
     {
+        parent::__construct();
+        $this->specifyActions([], true);
         $this->alertClass = $alertClass;
         $this->sessionClass = $sessionClass;
     }

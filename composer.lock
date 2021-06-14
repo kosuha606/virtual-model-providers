@@ -4,24 +4,25 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3f5f27bf13c4f311dca3833d6b3bd1d3",
+    "content-hash": "666c3b4488625a37a09a3ddc27947d08",
     "packages": [
         {
             "name": "kosuha606/virtual-model",
-            "version": "1.2.7",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kosuha606/virtual-model.git",
-                "reference": "eab9e22301ba1385d15c28ee195fcedf3189c49e"
+                "reference": "cc38c248414db29a61ad5930b9463b3c523dd589"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kosuha606/virtual-model/zipball/eab9e22301ba1385d15c28ee195fcedf3189c49e",
-                "reference": "eab9e22301ba1385d15c28ee195fcedf3189c49e",
+                "url": "https://api.github.com/repos/kosuha606/virtual-model/zipball/cc38c248414db29a61ad5930b9463b3c523dd589",
+                "reference": "cc38c248414db29a61ad5930b9463b3c523dd589",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.0.0"
+                "ext-json": "*",
+                "php": ">=7.4"
             },
             "require-dev": {
                 "phpstan/phpstan": "^0.12.0@dev",
@@ -41,7 +42,7 @@
                 }
             ],
             "description": "VirtualModel",
-            "time": "2021-05-30T15:43:00+00:00"
+            "time": "2021-06-14T11:06:57+00:00"
         },
         {
             "name": "mongodb/mongodb",
@@ -1769,7 +1770,10 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "ext-mongodb": "*",
+        "ext-json": "*",
+        "ext-pdo": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "1.1.0"
